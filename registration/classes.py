@@ -32,6 +32,7 @@ from ..ui.panels.axis_extrude_panel import VIEW3D_PT_hardsurface_axis_extrude
 from ..ui.panels.cells_panel import VIEW3D_PT_hardsurface_cells
 from ..ui.panels.cables_panel import VIEW3D_PT_hardsurface_cables
 from ..ui.panels.flanges_panel import VIEW3D_PT_hardsurface_flanges
+from ..ui.panels.displace_panel import VIEW3D_PT_hardsurface_displace
 from ..operators.panels.op_random_panels import OBJECT_OT_random_panels
 from ..operators.panels.op_panel_screws import OBJECT_OT_panel_screws
 from ..operators.extrude.op_random_extrude import OBJECT_OT_random_extrude
@@ -45,6 +46,8 @@ from ..operators.tubes.op_flanges import OBJECT_OT_flanges
 from ..operators.presets.op_save_preset import OBJECT_OT_save_preset
 from ..operators.presets.op_load_preset import OBJECT_OT_load_preset
 from ..operators.presets.op_delete_preset import OBJECT_OT_delete_preset
+from ..operators.displace.op_noise_displace import OBJECT_OT_noise_displace
+from ..operators.displace.op_image_displace import OBJECT_OT_image_displace
 from ..operators.common.op_randomize_seed import OBJECT_OT_randomize_seed
 from ..operators.common.op_reset_settings import OBJECT_OT_reset_settings
 from ..operators.common.op_rebuild import OBJECT_OT_rebuild
@@ -63,6 +66,7 @@ classes = [
     VIEW3D_PT_hardsurface_cells,
     VIEW3D_PT_hardsurface_cables,
     VIEW3D_PT_hardsurface_flanges,
+    VIEW3D_PT_hardsurface_displace,
     VIEW3D_PT_hardsurface_presets,
     VIEW3D_PT_hardsurface_utilities,
     # Operators
@@ -76,6 +80,8 @@ classes = [
     OBJECT_OT_random_cells,
     OBJECT_OT_random_cables,
     OBJECT_OT_flanges,
+    OBJECT_OT_noise_displace,
+    OBJECT_OT_image_displace,
     OBJECT_OT_save_preset,
     OBJECT_OT_load_preset,
     OBJECT_OT_delete_preset,

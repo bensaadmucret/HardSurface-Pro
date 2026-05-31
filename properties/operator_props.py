@@ -716,11 +716,135 @@ class FlangesProps(bpy.types.PropertyGroup):
     )
 
 
+class NoiseDisplaceProps(bpy.types.PropertyGroup):
+    """Properties for Noise Displace operator."""
+
+    seed: IntProperty(
+        name="Seed",
+        description="Noise seed",
+        default=0,
+        min=0,
+        max=2147483647
+    )
+
+    scale: FloatProperty(
+        name="Scale",
+        description="Scale of the noise",
+        default=2.0,
+        min=0.001,
+        max=100.0
+    )
+
+    strength: FloatProperty(
+        name="Strength",
+        description="Displacement strength",
+        default=0.5,
+        min=0.0,
+        max=10.0
+    )
+
+    detail: FloatProperty(
+        name="Detail",
+        description="Noise detail / octaves",
+        default=2.0,
+        min=0.0,
+        max=16.0
+    )
+
+    noise_type: EnumProperty(
+        name="Noise Type",
+        items=[
+            ('PERLIN', "Perlin", "Classic Perlin noise"),
+            ('VORONOI_F1', "Voronoi F1", "Voronoi distance to nearest cell center"),
+            ('VORONOI_F2', "Voronoi F2", "Voronoi distance to 2nd nearest cell center"),
+            ('VORONOI_F2F1', "Voronoi F2-F1", "Difference between F2 and F1"),
+            ('CELLNOISE', "Cell Noise", "Cell-based noise"),
+            ('SIMPLEX', "Simplex", "Simplex noise"),
+        ],
+        default='PERLIN'
+    )
+
+    use_normal: BoolProperty(
+        name="Along Normal",
+        description="Displace along vertex normals",
+        default=True
+    )
+
+    axis: EnumProperty(
+        name="Axis",
+        items=[
+            ('X', "X", "Local X axis"),
+            ('Y', "Y", "Local Y axis"),
+            ('Z', "Z", "Local Z axis"),
+        ],
+        default='Z'
+    )
+
+    smooth: BoolProperty(
+        name="Smooth",
+        description="Use smooth interpolation",
+        default=True
+    )
+
+
+class ImageDisplaceProps(bpy.types.PropertyGroup):
+    """Properties for Image Displace operator."""
+
+    image_path: StringProperty(
+        name="Image",
+        description="Path to the image texture",
+        default="",
+        subtype='FILE_PATH'
+    )
+
+    strength: FloatProperty(
+        name="Strength",
+        description="Displacement strength",
+        default=1.0,
+        min=-10.0,
+        max=10.0
+    )
+
+    use_normal: BoolProperty(
+        name="Along Normal",
+        description="Displace along vertex normals",
+        default=True
+    )
+
+    axis: EnumProperty(
+        name="Axis",
+        items=[
+            ('X', "X", "Local X axis"),
+            ('Y', "Y", "Local Y axis"),
+            ('Z', "Z", "Local Z axis"),
+        ],
+        default='Z'
+    )
+
+    channel: EnumProperty(
+        name="Channel",
+        items=[
+            ('LUMINANCE', "Luminance", "Grayscale luminance"),
+            ('RED', "Red", "Red channel"),
+            ('GREEN', "Green", "Green channel"),
+            ('BLUE', "Blue", "Blue channel"),
+            ('ALPHA', "Alpha", "Alpha channel"),
+        ],
+        default='LUMINANCE'
+    )
+
+    use_uv: BoolProperty(
+        name="Use UV",
+        description="Map image using active UV map instead of planar projection",
+        default=True
+    )
+
+
 def register():
     # Register the PropertyGroup classes first
     for cls in [RandomPanelsProps, RandomExtrudeProps, RandomScatterProps, RandomTubesProps,
                 RandomLoopExtrudeProps, PanelScrewsProps, RandomAxisExtrudeProps, RandomCellsProps,
-                RandomCablesProps, FlangesProps]:
+                RandomCablesProps, FlangesProps, NoiseDisplaceProps, ImageDisplaceProps]:
         try:
             bpy.utils.register_class(cls)
         except ValueError:
@@ -766,6 +890,14 @@ def register():
         bpy.types.WindowManager.flanges_props = bpy.props.PointerProperty(
             type=FlangesProps
         )
+    if not hasattr(bpy.types.WindowManager, 'noise_displace_props'):
+        bpy.types.WindowManager.noise_displace_props = bpy.props.PointerProperty(
+            type=NoiseDisplaceProps
+        )
+    if not hasattr(bpy.types.WindowManager, 'image_displace_props'):
+        bpy.types.WindowManager.image_displace_props = bpy.props.PointerProperty(
+            type=ImageDisplaceProps
+        )
 
 
 def unregister():
@@ -789,11 +921,15 @@ def unregister():
         del bpy.types.WindowManager.random_cables_props
     if hasattr(bpy.types.WindowManager, 'flanges_props'):
         del bpy.types.WindowManager.flanges_props
-        
+    if hasattr(bpy.types.WindowManager, 'noise_displace_props'):
+        del bpy.types.WindowManager.noise_displace_props
+    if hasattr(bpy.types.WindowManager, 'image_displace_props'):
+        del bpy.types.WindowManager.image_displace_props
+
     # Unregister PropertyGroup classes last
     for cls in reversed([RandomPanelsProps, RandomExtrudeProps, RandomScatterProps, RandomTubesProps,
                          RandomLoopExtrudeProps, PanelScrewsProps, RandomAxisExtrudeProps, RandomCellsProps,
-                         RandomCablesProps, FlangesProps]):
+                         RandomCablesProps, FlangesProps, NoiseDisplaceProps, ImageDisplaceProps]):
         try:
             bpy.utils.unregister_class(cls)
         except RuntimeError:

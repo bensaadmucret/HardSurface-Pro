@@ -17,3 +17,4 @@ from . import scatter
 from . import tubes
 from . import presets
 from . import common
+from . import displace

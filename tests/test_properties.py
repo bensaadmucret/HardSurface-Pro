@@ -29,6 +29,16 @@ class TestPropertyGroups(unittest.TestCase):
         from hardsurface_addon.properties.operator_props import RandomExtrudeProps
         self.assertIsNotNone(RandomExtrudeProps)
 
+    def test_noise_displace_props_class_exists(self):
+        """Test NoiseDisplaceProps class exists."""
+        from hardsurface_addon.properties.operator_props import NoiseDisplaceProps
+        self.assertIsNotNone(NoiseDisplaceProps)
+
+    def test_image_displace_props_class_exists(self):
+        """Test ImageDisplaceProps class exists."""
+        from hardsurface_addon.properties.operator_props import ImageDisplaceProps
+        self.assertIsNotNone(ImageDisplaceProps)
+
 class TestSceneProps(unittest.TestCase):
     """Test cases for Scene-level properties."""
     
