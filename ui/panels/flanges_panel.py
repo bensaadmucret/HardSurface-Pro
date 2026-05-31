@@ -28,7 +28,12 @@ class VIEW3D_PT_hardsurface_flanges(Panel):
     bl_category = "HardSurface"
     bl_parent_id = "VIEW3D_PT_hardsurface_main"
     bl_options = {'DEFAULT_CLOSED'}
-    
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+        return obj is not None and obj.type == 'CURVE'
+
     def draw(self, context):
         layout = self.layout
         wm = context.window_manager

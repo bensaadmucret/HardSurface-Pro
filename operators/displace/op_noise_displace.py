@@ -97,6 +97,14 @@ class OBJECT_OT_noise_displace(Operator):
         default=True
     )
 
+    subdivide: IntProperty(
+        name="Subdivide",
+        description="Subdivide selected faces before displacement (0 = none)",
+        default=2,
+        min=0,
+        max=6
+    )
+
     @classmethod
     def poll(cls, context):
         obj = context.active_object
@@ -114,6 +122,7 @@ class OBJECT_OT_noise_displace(Operator):
             self.use_normal = props.use_normal
             self.axis = props.axis
             self.smooth = props.smooth
+            self.subdivide = props.subdivide
         return self.execute(context)
 
     def execute(self, context):
@@ -124,6 +133,11 @@ class OBJECT_OT_noise_displace(Operator):
         if obj.mode != 'EDIT':
             BlenderUtils.report_error(self, "Must be in Edit Mode")
             return {'CANCELLED'}
+
+        # Auto-subdivide using native operator (keeps selection)
+        if self.subdivide > 0:
+            for _ in range(self.subdivide):
+                bpy.ops.mesh.subdivide(number_cuts=1, smoothness=0)
 
         bm = bmesh.from_edit_mesh(mesh)
         bm.verts.ensure_lookup_table()
@@ -137,19 +151,20 @@ class OBJECT_OT_noise_displace(Operator):
         # Seed offset
         mathutils.noise.seed_set(self.seed)
 
-        # Map noise type string to mathutils.noise type constant
+        # Map noise type string to mathutils.noise noise_basis string
         noise_map = {
-            'PERLIN': mathutils.noise.types.PERLIN_ORIGINAL,
-            'VORONOI_F1': mathutils.noise.types.VORONOI_F1,
-            'VORONOI_F2': mathutils.noise.types.VORONOI_F2,
-            'VORONOI_F2F1': mathutils.noise.types.VORONOI_F2F1,
-            'CELLNOISE': mathutils.noise.types.CELLNOISE,
-            'SIMPLEX': mathutils.noise.types.SIMPLEX,
+            'PERLIN': 'PERLIN_ORIGINAL',
+            'VORONOI_F1': 'VORONOI_F1',
+            'VORONOI_F2': 'VORONOI_F2',
+            'VORONOI_F2F1': 'VORONOI_F2F1',
+            'CELLNOISE': 'CELLNOISE',
+            'SIMPLEX': 'SIMPLEX',
         }
-        basis = noise_map.get(self.noise_type, mathutils.noise.types.PERLIN_ORIGINAL)
+        basis = noise_map.get(self.noise_type, 'PERLIN_ORIGINAL')
 
         for v in selected_verts:
-            co = obj.matrix_world @ v.co
+            # Use local coordinates for consistent displacement
+            co = v.co
             # Sample noise at vertex position scaled by scale
             nval = mathutils.noise.noise(
                 co * self.scale,
@@ -160,7 +175,7 @@ class OBJECT_OT_noise_displace(Operator):
             if self.detail > 0:
                 nval += mathutils.noise.turbulence(
                     co * self.scale,
-                    self.detail,
+                    int(self.detail),
                     False,  # hard (False = smooth)
                     noise_basis=basis
                 ) * 0.3
@@ -169,8 +184,12 @@ class OBJECT_OT_noise_displace(Operator):
             offset = nval * self.strength
 
             if self.use_normal:
-                # Transform normal to world space for displacement
-                no = (obj.matrix_world.to_3x3() @ v.normal).normalized()
+                # Use face normals for cleaner displacement on sharp edges
+                linked_faces = [f for f in v.link_faces if f.select]
+                if linked_faces:
+                    no = sum((f.normal for f in linked_faces), Vector((0.0, 0.0, 0.0))).normalized()
+                else:
+                    no = v.normal.normalized()
                 v.co += no * offset
             else:
                 # Use local axis
@@ -198,5 +217,6 @@ class OBJECT_OT_noise_displace(Operator):
             props.use_normal = self.use_normal
             props.axis = self.axis
             props.smooth = self.smooth
+            props.subdivide = self.subdivide
 
         return {'FINISHED'}

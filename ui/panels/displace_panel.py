@@ -44,6 +44,7 @@ class VIEW3D_PT_hardsurface_displace(Panel):
             if not props.use_normal:
                 col.prop(props, "axis")
             col.prop(props, "smooth")
+            col.prop(props, "subdivide")
 
         box.operator("hardsurface.noise_displace", icon='PLAY')
         box.separator()
@@ -62,5 +63,6 @@ class VIEW3D_PT_hardsurface_displace(Panel):
                 col.prop(props, "axis")
             col.prop(props, "channel")
             col.prop(props, "use_uv")
+            col.prop(props, "subdivide")
 
         box.operator("hardsurface.image_displace", icon='PLAY')

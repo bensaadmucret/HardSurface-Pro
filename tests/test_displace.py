@@ -75,6 +75,18 @@ class TestDisplaceSourceContent(unittest.TestCase):
         src = self._read_file('operators', 'displace', 'op_image_displace.py')
         self.assertIn('def poll(cls, context):', src)
 
+    def test_image_displace_has_invoke(self):
+        """Image displace operator must define invoke method to load props."""
+        src = self._read_file('operators', 'displace', 'op_image_displace.py')
+        self.assertIn('def invoke(self, context, event):', src)
+        self.assertIn('wm.image_displace_props', src)
+
+    def test_image_displace_saves_props(self):
+        """Image displace execute must save props back to window manager."""
+        src = self._read_file('operators', 'displace', 'op_image_displace.py')
+        self.assertIn('wm = context.window_manager', src)
+        self.assertIn("props.image_path = self.image_path", src)
+
     def test_panel_has_correct_id(self):
         """Displace panel must define correct bl_idname."""
         src = self._read_file('ui', 'panels', 'displace_panel.py')

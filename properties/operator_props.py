@@ -786,6 +786,14 @@ class NoiseDisplaceProps(bpy.types.PropertyGroup):
         default=True
     )
 
+    subdivide: IntProperty(
+        name="Subdivide",
+        description="Subdivide selected faces before displacement",
+        default=2,
+        min=0,
+        max=6
+    )
+
 
 class ImageDisplaceProps(bpy.types.PropertyGroup):
     """Properties for Image Displace operator."""
@@ -837,6 +845,14 @@ class ImageDisplaceProps(bpy.types.PropertyGroup):
         name="Use UV",
         description="Map image using active UV map instead of planar projection",
         default=True
+    )
+
+    subdivide: IntProperty(
+        name="Subdivide",
+        description="Subdivide selected faces before displacement",
+        default=2,
+        min=0,
+        max=6
     )
 
 

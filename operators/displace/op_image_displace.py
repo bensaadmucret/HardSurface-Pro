@@ -77,10 +77,31 @@ class OBJECT_OT_image_displace(Operator):
         default=True
     )
 
+    subdivide: bpy.props.IntProperty(
+        name="Subdivide",
+        description="Subdivide selected faces before displacement (0 = none)",
+        default=2,
+        min=0,
+        max=6
+    )
+
     @classmethod
     def poll(cls, context):
         obj = context.active_object
         return obj and obj.type == 'MESH' and obj.mode == 'EDIT'
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        if hasattr(wm, 'image_displace_props'):
+            props = wm.image_displace_props
+            self.image_path = props.image_path
+            self.strength = props.strength
+            self.use_normal = props.use_normal
+            self.axis = props.axis
+            self.channel = props.channel
+            self.use_uv = props.use_uv
+            self.subdivide = props.subdivide
+        return self.execute(context)
 
     def execute(self, context):
         obj = context.active_object
@@ -103,6 +124,11 @@ class OBJECT_OT_image_displace(Operator):
         if image is None or len(image.pixels) == 0:
             BlenderUtils.report_error(self, "Image has no pixels")
             return {'CANCELLED'}
+
+        # Auto-subdivide using native operator (keeps selection)
+        if self.subdivide > 0:
+            for _ in range(self.subdivide):
+                bpy.ops.mesh.subdivide(number_cuts=1, smoothness=0)
 
         bm = bmesh.from_edit_mesh(mesh)
         bm.verts.ensure_lookup_table()
@@ -185,7 +211,12 @@ class OBJECT_OT_image_displace(Operator):
             offset = (h - 0.5) * self.strength * 2.0  # Center around 0
 
             if self.use_normal:
-                no = v.normal.normalized()
+                # Use face normals for cleaner displacement on sharp edges
+                linked_faces = [f for f in v.link_faces if f.select]
+                if linked_faces:
+                    no = sum((f.normal for f in linked_faces), Vector((0.0, 0.0, 0.0))).normalized()
+                else:
+                    no = v.normal.normalized()
                 v.co += no * offset
             else:
                 axis_vec = Vector((0.0, 0.0, 0.0))
@@ -199,4 +230,17 @@ class OBJECT_OT_image_displace(Operator):
 
         bmesh.update_edit_mesh(mesh, loop_triangles=True)
         BlenderUtils.report_info(self, f"Image Displace applied to {len(selected_verts)} vertices")
+
+        # Save props
+        wm = context.window_manager
+        if hasattr(wm, 'image_displace_props'):
+            props = wm.image_displace_props
+            props.image_path = self.image_path
+            props.strength = self.strength
+            props.use_normal = self.use_normal
+            props.axis = self.axis
+            props.channel = self.channel
+            props.use_uv = self.use_uv
+            props.subdivide = self.subdivide
+
         return {'FINISHED'}
